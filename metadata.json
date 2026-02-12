@@ -1,0 +1,7 @@
+{
+  "name": "tripl+o",
+  "description": "A comprehensive trip itinerary management app to organize attractions, food, accommodation, and budget in one place.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
