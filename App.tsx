@@ -1,18 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
-import { Trip } from './types';
+import { Trip, Activity } from './types';
 import Dashboard from './components/Dashboard';
 import TripDetail from './components/TripDetail';
 import TripForm from './components/TripForm';
+import ExploreView from './components/ExploreView';
 import { 
   PlusIcon, 
   CompassIcon,
-  LayoutDashboardIcon
+  LayoutDashboardIcon,
+  SearchIcon
 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'create' | 'detail'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'create' | 'detail' | 'explore'>('dashboard');
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,6 +44,23 @@ const App: React.FC = () => {
   const handleDeleteTrip = (id: string) => {
     setTrips(trips.filter(t => t.id !== id));
     setCurrentView('dashboard');
+  };
+
+  const handleAddActivityToTrip = (tripId: string, activity: Activity) => {
+    setTrips(trips.map(t => {
+      if (t.id === tripId) {
+        const newItinerary = [...t.itinerary];
+        // Add to the first day by default for simplicity in discovery
+        if (newItinerary.length > 0) {
+          newItinerary[0] = {
+            ...newItinerary[0],
+            activities: [...newItinerary[0].activities, activity]
+          };
+        }
+        return { ...t, itinerary: newItinerary };
+      }
+      return t;
+    }));
   };
 
   const navigateToDetail = (id: string) => {
@@ -74,6 +93,12 @@ const App: React.FC = () => {
               >
                 My Trips
               </button>
+              <button 
+                onClick={() => setCurrentView('explore')}
+                className={`text-sm font-extrabold transition-all uppercase tracking-wider ${currentView === 'explore' ? 'text-slate-900 underline underline-offset-8' : 'text-slate-700 hover:text-slate-900'}`}
+              >
+                Discovery
+              </button>
               <div className="h-4 w-[1px] bg-black/10" />
               <button 
                 onClick={() => setCurrentView('create')}
@@ -96,6 +121,13 @@ const App: React.FC = () => {
           />
         )}
         
+        {currentView === 'explore' && (
+          <ExploreView 
+            trips={trips} 
+            onAddActivity={handleAddActivityToTrip}
+          />
+        )}
+
         {currentView === 'create' && (
           <div className="py-12">
             <TripForm 
@@ -116,12 +148,18 @@ const App: React.FC = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-6 left-6 right-6 flex md:hidden items-center justify-center gap-12 px-8 py-4 glass-header border border-black/5 rounded-[2.5rem] shadow-2xl z-50">
+      <div className="fixed bottom-6 left-6 right-6 flex md:hidden items-center justify-around px-8 py-4 glass-header border border-black/5 rounded-[2.5rem] shadow-2xl z-50">
         <button 
           onClick={() => setCurrentView('dashboard')}
           className={`flex flex-col items-center gap-1 transition-all ${currentView === 'dashboard' ? 'text-slate-900 scale-110' : 'text-slate-600 opacity-50'}`}
         >
           <LayoutDashboardIcon className="w-6 h-6" />
+        </button>
+        <button 
+          onClick={() => setCurrentView('explore')}
+          className={`flex flex-col items-center gap-1 transition-all ${currentView === 'explore' ? 'text-slate-900 scale-110' : 'text-slate-600 opacity-50'}`}
+        >
+          <SearchIcon className="w-6 h-6" />
         </button>
         <button 
           onClick={() => setCurrentView('create')}
